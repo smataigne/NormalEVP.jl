@@ -1,12 +1,27 @@
 using LinearAlgebra, SkewLinearAlgebra
 
-function getgivens(a,b)
+"""
+This file contains routines to isolate the zero diagonal values of a square upper bidiagonal matrix.
+The procedure is detailed in Appendix A of Mataigne, S., Gallivan, K., The eigenvalue decomposition of normal matrices using the decomposition of the skew-symmetric part with applications to orthogonal matrices.
+"""
+
+function getgivens(a::Number, b::Number)
+    """
+    Input: a,b two numbers.
+    Output: Returns  c,s of the Givens rotation [c s; -s  c] eliminating b such that G * [a; b] = [√(a^2+b^2); 0]
+    """
     nm = hypot(a, b)
     iszero(nm) && return 1, 0, 0
     return a / nm , b / nm, nm
 end
 
 @views function chase_zero!(β::AbstractVector{T}, loczero::Integer, Grow::AbstractMatrix{T}, Gcol::AbstractMatrix{T}) where T
+    """
+    Input:  - a vector β representing a square upper bidiagonal matrix B, i.e., the odd-indexed elements of β represent de main diagonal of B and the even-indexed elements represent the upper diagonal.
+            - loczero: β[loczero] = 0
+            - Grow and Gcol: empty vector
+    Output: the zero of β is isolated using Givens rotations on the rows and columns of β. The Givens rotations are stored in Grow and Gcol.
+    """
     n = length(β)
     σ = β[loczero - 1]
     β[loczero - 1] = 0
@@ -53,14 +68,21 @@ end
     return krow, kcol
 end
 
-
-
 @views function chase_zeros!(β::AbstractVector{T}, Q::AbstractMatrix{T}) where T
+    """
+    Input:  - a vector β representing a square upper bidiagonal matrix B, i.e., the odd-indexed elements of β represent de main diagonal of B and the even-indexed elements represent the upper diagonal.
+            - A square matrix Q.
+    Output: Returns β updated such that odd-indexed elements of β that are equal to zero, are surrounded by even-indexed elements also equal to zero. Transformations on β are applied on Q also.
+    Description: Given a bidiagonal matrix B of size n × n and a matrix Q of size N × N. The zero diagonal elements of B are isolated: B = UB₂V^T. The tranformation os performed in-place (B ← B₂) 
+    The transformation  Q ← Q * [V  0;  is applied on Q.
+                                 0  U]
+    """
     n = length(β)
     N = size(Q, 1)
     ε = 10 * eps(T)
     start = 1
-    Gcol = zeros(T, 2, n)
+    # Memory allocation to store Givens rotations.
+    Gcol = zeros(T, 2, n)  
     Grow = zeros(T, 2, n)
     for k ∈ 3:2:(n-2)
         if abs(β[k]) < ε

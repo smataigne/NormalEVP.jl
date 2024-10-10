@@ -1,0 +1,15 @@
+\begin{thebibliography}{1}
+
+\bibitem{Vandebril11}
+Raf Vandebril.
+\newblock Chasing bulges or rotations? {A} metamorphosis of the {QR}-algorithm.
+\newblock {\em SIAM Journal on Matrix Analysis and Applications},
+  32(1):217--247, 2011.
+
+\bibitem{WardGray78}
+R.~C. Ward and L.~J. Gray.
+\newblock Eigensystem computation for skew-symmetric and a class of symmetric
+  matrices.
+\newblock {\em ACM Trans. Math. Softw.}, 4(3):278–285, sep 1978.
+
+\end{thebibliography}

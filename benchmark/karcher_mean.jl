@@ -5,14 +5,14 @@ include("../src/normal_schur.jl")
 @views function karcher(Q::AbstractArray{T}, mylog::Function) where T
     n = size(Q, 1)
     N = size(Q, 3)
-    ε = sqrt(eps(T))
-    α = 1 / (N * n)
-    Qc = Matrix(qr(dropdims(mean(Q, dims = 3), dims = 3)).Q)
-    Log = randn(T, n, n)
-    Log .-= Log'
-    QtQc = similar(Q, n, n)
     itermax = 100
-    if det(Qc) < 0
+    α = 1 / N
+    Log = zeros(T, n, n)
+    QtQc = similar(Q, n, n)
+    # Initial center of mass as the Q factor of the average of the dataset.
+    Qc = Matrix(qr(dropdims(mean(Q, dims = 3), dims = 3)).Q) 
+    #Check that Qc is on SO(n)
+    if logabsdet(Qc)[2] < 0 #logabsdet has increased accuracy compared to det;
         Qc[:, end] .*= -1
     end
     i = 0
@@ -26,38 +26,47 @@ include("../src/normal_schur.jl")
         mul!(Qc, QtQc, exp(skewhermitian!(Log .* α)), 1, 0)
         i += 1
     end 
-    return Qc, norm(Log)
+    return Qc
 end
-BLAS.set_num_threads(1)
 
+BLAS.set_num_threads(1)
 N1 = 2
-n1 = 10
+n1 = 20
 Q1 = randn(n1, n1, N1)
-for k ∈ 1:N1
-    Q1[: ,:, k] .= Matrix(qr(Q1[: ,:, k]).Q)
+@views for k ∈ 1:N1
+    global Q1
+    QR = qr(Q1[: ,:, k])
+    mul!(Q1[: ,:, k], Matrix(QR.Q), Diagonal(sign.(diag(QR.R))), 1, 0)
     if det(Q1[: ,:, k]) < 0
         Q1[: , end, k] .*= -1
     end
 end
-Q1[: ,:, 1] .= Matrix(qr(Q1[: ,:, 1]).Q)
-karcher(Q1, myskewlog)
+l = karcher(Q1, myskewlog)[2]
 myskewlog(Q1[:, :, 1])
 
-times = zeros(3, 3, 2)
-for (i, N) ∈ enumerate([16, 32, 64])
-    for (j, n) ∈ enumerate([10, 33, 100])
+T = 4
+times = 1000 * ones(3, 4, 2)
+@views(for (i, N) ∈ enumerate([16, 32, 64])
+    for (j, n) ∈ enumerate([25, 50, 100, 200])
         Q = randn(n, n, N)
         for k ∈ 1:N
-            Q[: ,:, k] .= Matrix(qr(Q[: ,:, k]).Q)
+            QR = qr(Q[: ,:, k])
+            mul!(Q[: ,:, k], Matrix(QR.Q), Diagonal(sign.(diag(QR.R))), 1, 0)
             if det(Q[: ,:, k]) < 0
                 Q[: , end, k] .*= -1
             end
         end
-        times[i, j, 1] = @belapsed karcher($Q, skewlog) 
-        times[i, j, 2] = @belapsed karcher($Q, myskewlog) 
+        for k ∈ 1:T
+            times[i, j, 1] = min(@elapsed karcher(Q, skewlog), times[i, j, 1]) 
+            times[i, j, 2] = min(@elapsed karcher(Q, myskewlog), times[i, j, 2])
+        end
+        display(times[i, j , :])
+        print("Done: n = "*string(n)*"\n")
     end
-end
+    print("Done: N = "*string(N)*"\n")
+end)
 display(times)
+
 
 
 

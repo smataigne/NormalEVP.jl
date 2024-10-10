@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{colortbl}
+\title{Note on the chasing of zero diagonal elements of bidiagonal matrices}
+\author{Simon Mataigne}
+\date{}
+\def \gr {\color{blue}}
+\begin{document}
+\maketitle
+
+	We briefly describe a bulge-chasing procedure (see, e.g., \cite{Vandebril11}) to isolate the zero singular values of a square bidiagonal matrix using orthogonal similarity transformations. The procedure requires Givens rotations. We recall that given a vector $\mathbb{R}^2\ni[a\ b]^T\neq 0$, the Givens rotation $G_{a,b}$ is defined by
+	\begin{equation}
+	G_{a,b}\begin{bmatrix}
+	a\\
+	b
+	\end{bmatrix}:= \frac{1}{\sqrt{a^2+b^2}}\begin{bmatrix}
+	a&b\\
+	-b&a
+	\end{bmatrix}\begin{bmatrix}
+	a\\
+	b
+	\end{bmatrix} = \begin{bmatrix}
+	\sqrt{a^2+b^2}\\
+	0
+	\end{bmatrix}.
+\end{equation}	
+Given a matrix $n\times n$ matrix $\left[\begin{smallmatrix}0&-\widetilde{B}^T\\ \widetilde{B}&0\end{smallmatrix}\right]$ where $\widetilde{B}$ is $\lfloor\frac{n}{2}\rfloor\times\lceil\frac{n}{2}\rceil$, bidiagonal and has $\lceil\frac{r}{2}\rceil$ zero singular values, the goal is to obtain $\left[\begin{smallmatrix}0&0&-B^T\\0&0_r&0\\ B&0&0\end{smallmatrix}\right]$ where $B$ is bidiagonal and full rank. We assume $\widetilde{B}$ to be square because a bulge-chasing procedure described in \cite{WardGray78} allows to eliminate the zero singular value associated with $n$ odd. If $\widetilde{B}$ is not full rank, then there is at least one zero diagonal element since $\widetilde{B}$ is upper triangular. This zero can be isolated by the bulge chasing procedure described below where we consider a small matrix example. The method readily extends to higher dimensions. We assume that Givens rotations are extended to match matrix dimensions that are not $2\times 2$. The pairs of scalars eliminated by the successive Givens rotations are colored in blue.
+
+{\scriptsize
+	\begin{align*}
+		\widetilde{B}=\begin{bmatrix}
+		\alpha_1&\beta_1&0&0&0\\
+		0& \gr \alpha_2& \gr \beta_2&0&0\\
+		0&0&0&\beta_3&0\\
+		0&0&0&\alpha_3&\beta_4\\
+		0&0&0&0&\alpha_4
+		\end{bmatrix}&\xrightarrow{\bullet G_{\alpha_2,\beta_2}^T} \begin{bmatrix}
+		\gr \alpha_1&\widetilde{\beta}_1&\gr \gamma_1&0&0\\
+		0&\widetilde{\alpha}_2&0&0&0\\
+		0&0&0&\beta_3&0\\
+		0&0&0&\alpha_3&\beta_4\\
+		0&0&0&0&\alpha_4
+		\end{bmatrix}\xrightarrow{\bullet  G_{\alpha_1,\gamma_1}^T}\\ 
+		\begin{bmatrix}
+		\widetilde{\alpha}_1&\widetilde{\beta}_1&0&0&0\\
+		0&\widetilde{\alpha}_2&0&0&0\\
+		0&0&0&\gr \beta_3&0\\
+		0&0&0&\gr \alpha_3&\beta_4\\
+		0&0&0&0&\alpha_4
+		\end{bmatrix}
+		\xrightarrow{G_{\alpha_3,\beta_3}\bullet }&\begin{bmatrix}
+		\widetilde{\alpha}_1&\widetilde{\beta}_1&0&0&0\\
+		0&\widetilde{\alpha}_2&0&0&0\\
+		0&0&0&0&\gr \gamma_3\\
+		0&0&0&\widetilde{\alpha}_3&\widetilde{\beta}_4\\
+		0&0&0&0&\gr \alpha_4
+		\end{bmatrix}\xrightarrow{ G_{\alpha_4,\gamma_3}\bullet }\begin{bmatrix}
+		\widetilde{\alpha}_1&\widetilde{\beta}_1&0&0&0\\
+		0&\widetilde{\alpha}_2&0&0&0\\
+		0&0&0&0&0\\
+		0&0&0&\widetilde{\alpha}_3&\widetilde{\beta}_4\\
+		0&0&0&0&\widetilde{\alpha}_4
+		\end{bmatrix}.
+	\end{align*}}
+	After row and column permutation of the last matrix, we can extract the submatrix
+	\begin{equation*}
+	B=\begin{bmatrix}
+		\widetilde{\alpha}_1&\widetilde{\beta}_1&0&0\\
+		0&\widetilde{\alpha}_2&0&0\\
+		0&0&\widetilde{\alpha}_3&\widetilde{\beta}_4\\
+		0&0&0&\widetilde{\alpha}_4
+		\end{bmatrix} \text{ with } \widetilde{B} = G_{\alpha_3,\beta_3}^TG_{\alpha_4,\gamma_3}^TP_1^T  \begin{bmatrix}0&0_1\\
+		B&0\end{bmatrix} P_2 G_{\alpha_1,\gamma_1} G_{\alpha_2,\beta_2}.
+	\end{equation*}
+	If we define $G = \begin{bmatrix}
+	G_{\alpha_2,\beta_2}^TG_{\alpha_1,\gamma_1}^TP_2^T&0\\
+	0&G_{\alpha_3,\beta_3}^TG_{\alpha_4,\gamma_3}^TP_1^T
+	\end{bmatrix}$, it follows that \begin{equation}
+	\begin{bmatrix}0&-\widetilde{B}^T\\
+	 \widetilde{B}&0\end{bmatrix} = G\begin{bmatrix}0&0&-B^T\\0&0_2&0\\ B&0&0\end{bmatrix}G^T.
+	\end{equation}
+	In higher dimensions, if $B$ is still not full rank, the method can recursively be applied on the top left and the bottom right blocks of $B$ to isolate more zero singular values.
+	\bibliographystyle{plain}
+	\bibliography{orthogonalbib.bib}
+	\end{document}
+
+
+
+
