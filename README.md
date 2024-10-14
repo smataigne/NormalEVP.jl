@@ -1,6 +1,6 @@
 # NormalEVP.jl
 This repository contains routines for the eigenvalue decomposition of real normal matrices. It is associated with the paper :"Mataigne S., Gallivan K., *The eigenvalue decomposition of normal matrices by the decomposition of the skew-symmetric part with applications to orthogonal matrices, (2024).*
-![My nice plot](https://github.com/smataigne/NormalEVP.jl/tree/main/figures/ig_sets.png)
+![My nice plot](https://github.com/smataigne/NormalEVP.jl/blob/main/figures/ig_sets.png)
 ## Requirements
 To use this repository, the user must have a Julia installation and have installed the following packages for computations: `LinearAlgebra`, `SkewLinearAlgebra`. And also the following packages to make the plots: `Plots`, `Colors`, `LaTeXStrings`, `Distributions`, `BenchmarkTools`. These packages are easily obtained from the package installation environment as follows. In Julia REPL, press `]` to access the installation environment and for each package, do
 ```julia
