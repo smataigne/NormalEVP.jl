@@ -42,7 +42,7 @@ Q1 = randn(n1, n1, N1)
     end
 end
 l = karcher(Q1, myskewlog)[2]
-myskewlog(Q1[:, :, 1])
+nrmskewlog(Q1[:, :, 1])
 
 T = 4
 times = 1000 * ones(3, 4, 2)
@@ -58,7 +58,7 @@ times = 1000 * ones(3, 4, 2)
         end
         for k ∈ 1:T
             times[i, j, 1] = min(@elapsed karcher(Q, skewlog), times[i, j, 1]) 
-            times[i, j, 2] = min(@elapsed karcher(Q, myskewlog), times[i, j, 2])
+            times[i, j, 2] = min(@elapsed karcher(Q, nrmskewlog), times[i, j, 2])
         end
         display(times[i, j , :])
         print("Done: n = "*string(n)*"\n")

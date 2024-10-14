@@ -2,21 +2,24 @@ using LinearAlgebra
 
 
 """
-Comment : wxlanczos!(A) and wxhessenberg!(A) are highly subject to numerical unstability.
+Comment : wxlanczos!(A) and wxhessenberg!(A) are numerically unstable.
 The symplecticity of the basis constructed by Lanczos is not a stable property.
 """
 
+"""
+wxlanczos!(A::Symmetric{T})
 
+Implementation of Lanczos algorithm for A = [W -X; X W] with W symmetric and X is skew-symmetric.\\
+A is assumed full-rank with eignvalues of multiplicity 2 exactly.\\
+Only n/2 iterations are performed and the orthogonalized (Krylov) basis is then extended using the symplectic structure of the eigenvectors.\\
+This procedure fully exploits the structure of A.
+
+Input: A symmetric matrix A = [W -X; X W] with W symmetric and X is skew-symmetric.
+
+Output: - A symplectic orthogonal basis K that tridiagonalizes A. (K stands for "Krylov")\\
+        - The tridiagonal form T (A = K * T * K')
+"""
 @views function wxlanczos!(A::Symmetric{T}) where T
-    #=
-    Implementation of Lanczos algorithm for A = [W -X; X W] with W symmetric and X is skew-symmetric.
-    A is assumed full-rank with eignvalues of multiplicity 2 exactly.
-    Only n/2 iterations are performed and the orthogonalized (Krylov) basis is then extended using the symplectic structure of the eigenvectors.
-    This procedure fully exploits the structure of A.
-    Input: A symmetric matrix A = [W -X; X W] with W symmetric and X is skew-symmetric.
-    Output: - A symplectic orthogonal basis K that tridiagonalizes A. (K stands for "Krylov")
-            - The tridiagonal form T (A = K * T * K')
-    =#
     n = size(A, 1); n2 =  n ÷ 2
     K = zeros(T, n, n)
     mul!(K[:, 1], A, randn(n), 1, 0)
@@ -44,16 +47,20 @@ end
 
 wxlanczos(A::Symmetric)  = wxlanczos!(copy(A)) 
 
+"""
+wxhessenberg!(A::AbstractMatrix{T})
+
+"Dummy" implementation of Householder tridiagonalization for A = [W -X; X W] with W symmetric and X is skew-symmetric.\\
+A is assumed full-rank with eignvalues of multiplicity 2 exactly.\\
+Only n/2 - 1 iterations are performed and the orthogonal basis is then extended using the symplectic structure of the eigenvectors.\\
+This procedure fully exploits the structure of A.
+
+Input: A symmetric matrix A = [W -X; X W] with W symmetric and X is skew-symmetric.
+
+Output: - A symplectic orthogonal basis Q that tridiagonalizes A.\\
+        - The tridiagonal form T (A = Q * T * Q')
+"""
 @views function wxhessenberg!(A::AbstractMatrix{T}) where T
-     #=
-    "Dummy" implementation of Householder tridiagonalization for A = [W -X; X W] with W symmetric and X is skew-symmetric.
-    A is assumed full-rank with eignvalues of multiplicity 2 exactly.
-    Only n/2 - 1 iterations are performed and the orthogonal basis is then extended using the symplectic structure of the eigenvectors.
-    This procedure fully exploits the structure of A.
-    Input: A symmetric matrix A = [W -X; X W] with W symmetric and X is skew-symmetric.
-    Output: - A symplectic orthogonal basis Q that tridiagonalizes A.
-            - The tridiagonal form T (A = Q * T * Q')
-    =#
     n = size(A, 1)
     x = zeros(T, n)
     u = zeros(T, n - 1)
@@ -88,6 +95,17 @@ end
 
 wxhessenberg(A::AbstractMatrix) = wxhessenberg!(copy(A))
 
+"""
+wxeigen!(A::AbstractMatrix{T}, method::Symbol)
+
+Eigenvalue decomposition of A = [W -X; X W] with W symmetric and X is skew-symmetric.\\
+A is assumed full-rank with eignvalues of multiplicity 2 exactly.\\
+
+Input: - A symmetric matrix A = [W -X; X W] with W symmetric and X is skew-symmetric.\\
+       - method = :L for Lanczos tridiag. and :H for Householder tridiagonalization.
+
+Output: The eigenvalue decomposition of A using Eigen structure. 
+"""
 @views function wxeigen!(A::AbstractMatrix{T}, method::Symbol) where T
     n = size(A, 1)
     n2 = n ÷ 2

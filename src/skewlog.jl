@@ -59,6 +59,15 @@ end
     return M
 end
 
+"""
+skewlog(Q::AbstractMatrix)
+
+Computes the real skew-symmetric logarithm of a real orthogonal matrix Q.
+
+Input: Real Orthogonal matrix Q.
+
+Output: Real Skew-symmetric logarithm of Q.
+"""
 @views function skewlog(Q::AbstractMatrix)
     """
     Computes the real skew-symmetric logarithm of a real orthogonal matrix Q.
@@ -70,12 +79,16 @@ end
     return skewhermitian!(multiplybylog(S.Z, S.T) * S.Z')
 end
 
-@views function myskewlog(Q::AbstractMatrix)
-    """
-    Computes the real skew-symmetric logarithm of a real orthogonal matrix Q.
-    Input: Real Orthogonal matrix Q.
-    Output: Real Skew-symmetric logarithm of Q.
-    """
+"""
+myskewlog(Q::AbstractMatrix)
+
+Computes the real skew-symmetric logarithm of a real orthogonal matrix Q.
+
+Input: Real Orthogonal matrix Q.
+
+Output: Real Skew-symmetric logarithm of Q.
+"""
+@views function nrmskewlog(Q::AbstractMatrix)
     S, V = nrmschur(Q)
     #The log of S.T is sparse, multpiplybylog takes advantage of the sparsity
     return skewhermitian!(multiplybylog(V, Matrix(S)) * V')

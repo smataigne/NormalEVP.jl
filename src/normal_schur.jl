@@ -1,12 +1,16 @@
 using LinearAlgebra, SkewLinearAlgebra
 include("chase_zeros.jl")
 
+"""
+skewlanczos(A::SkewHermitian{<:Real})
+
+Input: A n × n skew-symmetric matrix A.
+
+Output: An n × n matrix Q and a vector β.
+
+Description: Performs a skew-symmetric Lanczos tridiagonalization. The vector β contains the subdiagonal elements of the skew-symmetric tridiagonal factor. 
+"""
 @views function skewlanczos(A::SkewHermitian{<:Real})
-    """
-    Input: A n × n skew-symmetric matrix A.
-    Output: A vector β and a n × n matrix Q.
-    Description: Performs a skew-symmetric Lanczos tridiagonalization. The vector β contains the subdiagonal elements of the skew-symmetric tridiagonal factor. 
-    """
     n = size(A, 1)
     β = similar(A.data, n - 1)
     Q = similar(A.data, n, n)
@@ -25,23 +29,31 @@ include("chase_zeros.jl")
     return Q, β
 end
 
+"""
+even_odd_perm!(A::AbstractMatrix)
+
+Input: a n×n matrix A.
+
+Output: a permuted in-place.
+
+Description: An even-odd permutation is performed in-place on the columns of A. The even-odd permutation puts odd-indexed column in front of even-indexed columns.
+"""
 @views function even_odd_perm!(A::AbstractMatrix)
-    """
-    Input: a n×n matrix A.
-    Output: a permuted in-place.
-    Description: An even-odd permutation is performed in-place on the columns of A. The even-odd permutation puts odd-indexed column in front of even-indexed columns.
-    """
     n = size(A, 1)
     Base.permutecols!!(A, [1:2:n;2:2:n])
 end
 
+"""
+complex_real_perm!(A::AbstractMatrix, r₂::Integer)
+
+Input: - a n×n matrix A. \\
+        - r₂ is half the number of real eigenvalues of the normal matrix.
+
+Output: a permuted in-place.
+
+Description: An permutation is performed in-place on the columns of A. The columns associated to real eigenvalues are put at the end.
+"""
 @views function complex_real_perm!(A::AbstractMatrix, r₂::Integer)
-    """
-    Input: - a n×n matrix A. 
-           - r₂ is half the number of real eigenvalues of the normal matrix.
-    Output: a permuted in-place.
-    Description: An permutation is performed in-place on the columns of A. The columns associated to real eigenvalues are put at the end.
-    """
     n = size(A, 1)
     n₂ = n ÷ 2; odd = Int(isodd(n)) 
     r2b = r₂ + odd
@@ -64,18 +76,20 @@ end
     end)
 end
 
+"""
+find_multiplicity!(Σ::AbstractVector{T}, multiples::AbstractVector{Int}, n₂::Integer, odd::Bool, ε::Number)
 
+Input: - a sorted (decreasig order) vector Σ with nonnegative entries.\\
+        - an empty Integer vector "multiples" of the same size as Σ.\\
+        - an Integer n2, half the size of Σ.\\
+        - an Bool "odd" if original matrix is odd-sized.\\
+        - a tolerance ε.
 
+Output: multiples is filled in-place with multiplicity of the entries of Σ. The multiplicity is stored at the location of the first singular value of each cluster.
+
+The method also returns the number r of zero eigenvalues of the normal matrix and the number r2 of singular values in the vector Σ.
+    """
 @views function find_multiplicity!(Σ::AbstractVector{T}, multiples::AbstractVector{Int}, n₂::Integer, odd::Bool, ε::Number) where T
-    """
-    Input: - a sorted (decreasig order) vector Σ with nonnegative entries.
-           - an empty Integer vector "multiples" of the same size as Σ.
-           - an Integer n2, half the size of Σ.
-           - an Bool "odd" if original matrix is odd-sized.
-           - a tolerance ε.
-    Output: multiples is filled in-place with multiplicity of the entries of Σ. The multiplicity is stored at the location of the first singular value of each cluster.
-    The method also returns the number r of zero eigenvalues of the normal matrix and the number r2 of singular values in the vector Σ.
-    """
     j = 1; i = 2
     r = Int(odd)
     σ = Σ[1]
@@ -94,11 +108,14 @@ end
     return r, (r - Int(odd)) ÷ 2
 end
 
+"""
+find_zeros(v::AbstractVector{T})
+
+Input: a vector v.
+
+Output: a list of odd-indices of v where v is zero.
+"""
 function find_zeros(v::AbstractVector{T}) where T
-    """
-    Input: a vector v.
-    Output: a list of odd-indices of v where v is zero.
-    """
     n  = length(v)
     lz = zeros(Int, n)
     ε  = 10 * eps(T)
@@ -112,35 +129,39 @@ function find_zeros(v::AbstractVector{T}) where T
     return lz[1:nz], nz
 end
 
-@views function nrmschur(Q::AbstractMatrix{T}, param::Symbol, check_zeros::Bool, ε::Number) where T
-    """
-    Input: - a normal matrix Q from which the real Schur decomposition is desired.
-           - a param (:H or :L) to decide if skew-symmetric tridiagonalization is performed with Householder reflectors or with Lanczos.
-           - a boolean check_zeros that specifies if the zeros of teh bidiagonal matrix are isolated or not (true or false).
-           - a precision ε to decide multiplicity of the singular values (σ₁ ≈ σ₂ ⟺ |σ₁ - σ₂| < ε ⋅ σₘₐₓ)
-    Output: the tridiagonal Schur form S and the Schur vectors Q.
-    Description: Computes the real Schur decomposition of the matrix Q.
-    """
-    n = size(Q, 1)
+"""
+nrmschur(A::AbstractMatrix, param::Symbol, check_zeros::Bool, ε::Number)
+
+Input: - a normal matrix A from which the real Schur decomposition is desired.\\
+        - a param (:H or :L) to decide if skew-symmetric tridiagonalization is performed with Householder reflectors or with Lanczos.\\
+        - a boolean check_zeros that specifies if the zeros of teh bidiagonal matrix are isolated or not (true or false).\\
+        - a precision ε to decide multiplicity of the singular values (σ₁ ≈ σ₂ ⟺ |σ₁ - σ₂| < ε ⋅ σₘₐₓ)
+
+Output: the tridiagonal Schur form S and the Schur vectors Q.
+
+Description: Computes the real Schur decomposition of the matrix A.
+"""
+@views function nrmschur(A::AbstractMatrix{T}, param::Symbol, check_zeros::Bool, ε::Number) where T
+    n = size(A, 1)
     n2 = n ÷ 2; n2b = n2 + Int(isodd(n)) 
     Σ = zeros(n2)
     #First memory allocations
     multiples = ones(Int, n2)
-    V = similar(Q, n, n)
+    V = similar(A, n, n)
 
     #Compute the Schur decomposition of the skew-symmetric part
-    A = skewhermitian(Q)
+    Ω = skewhermitian(A)
     if param == :H
-        H = hessenberg(A)
+        H = hessenberg(Ω)
         K = Matrix(H.Q) #"K" for "Krylov" basis
         β = H.H.ev
     else
-        K, β = skewlanczos(A)
+        K, β = skewlanczos(Ω)
     end
     # If n is odd, isolate one zero eigenvalue of the skew-symmetric part (particular interest on SO(n)) 
     #'Bidiagonal' type only admits square matrices so that it is necessary to perform this step.
     if isodd(n)
-        Ginit = similar(Q, n - 1)
+        Ginit = similar(A, n - 1)
         SkewLinearAlgebra.reducetozero(β, Ginit, n - 1)
         update_vectors!(K[:, 1:2:n], Ginit, n - 1)
         V[:, n2b]  .= K[:, n]
@@ -188,11 +209,11 @@ end
     smax = maximum(multiples[1:m])
     #Second memory allocation
     k = max(2smax, r)
-    C = similar(Q, m)
-    M = similar(Q, k, k)
-    R = similar(Q, n, k)
-    temp = similar(Q, n, max(m, r))
-    mul!(temp[:, 1:m], Q, V[:, 1:m], 1, 0)
+    C = similar(A, m)
+    M = similar(A, k, k)
+    R = similar(A, n, k)
+    temp = similar(A, n, max(m, r))
+    mul!(temp[:, 1:m], A, V[:, 1:m], 1, 0)
     if isone(smax)
         #No multiplicity of any Λsin(θ) = Σ
         for i ∈ 1:m
@@ -228,16 +249,16 @@ end
     Λᵣ = 0
     if r > 1
         #Compute real eigenvalues and real eigenvectors
-        mul!(temp[:, 1:r], Q, V[:, (n - r + 1):n], 1, 0)
+        mul!(temp[:, 1:r], A, V[:, (n - r + 1):n], 1, 0)
         mul!(M[1:r, 1:r],  V[:, (n - r + 1):n]', temp[:, 1:r], 1, 0)
         Y = Symmetric(M)
-        E = Eigen(LinearAlgebra.sorteig!(LAPACK.syevd!('V', Y.uplo, Y.data)..., nothing)...) #d&d eigensolver
-        #E = Eigen(LinearAlgebra.sorteig!(LAPACK.syevr!('V', 'A', Y.uplo, Y.data, 0.0, 0.0, 0, 0, -1.0)..., nothing)...) #MRRR eigensolver
+        #E = Eigen(LinearAlgebra.sorteig!(LAPACK.syevd!('V', Y.uplo, Y.data)..., nothing)...) #d&d eigensolver
+        E = Eigen(LinearAlgebra.sorteig!(LAPACK.syevr!('V', 'A', Y.uplo, Y.data, 0.0, 0.0, 0, 0, -1.0)..., nothing)...) #MRRR eigensolver
         Λᵣ = E.values
         R[:, 1:r] .= V[:, (n - r + 1):n]
         mul!(V[:, (n - r + 1):n], R[:, 1:r], E.vectors, 1, 0)
     elseif isone(r)
-        Λᵣ = [dot(V[:, n], Q, V[:, n])]
+        Λᵣ = [dot(V[:, n], A, V[:, n])]
     end
     #Provide results in Tridiagonal Schur form
     d = zeros(n)
@@ -253,5 +274,5 @@ end
     return Tridiagonal(dl, d, -dl), V
 end
 
-nrmschur(Q::AbstractMatrix{T}, param::Symbol, check_zeros::Bool) where T = nrmschur(Q, param, check_zeros, 10 * eps(T))
-nrmschur(Q::AbstractMatrix{T}) where T = nrmschur(Q, :H, false, 10 * eps(T))
+nrmschur(A::AbstractMatrix{T}, param::Symbol, check_zeros::Bool) where T = nrmschur(A, param, check_zeros, 10 * eps(T))
+nrmschur(A::AbstractMatrix{T}) where T = nrmschur(A, :H, false, 10 * eps(T))

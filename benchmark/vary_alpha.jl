@@ -22,10 +22,10 @@ include("../src/normal_schur.jl")
 end
 
 BLAS.set_num_threads(1)
-n = 1000
+n = 600
 αs = Vector(0:0.02:0.6)
 N = length(αs)
-K = 100
+K = 200
 ε = 10 * eps(Float64)
 means = zeros(N, K)
 for j ∈ 0:K
@@ -33,7 +33,7 @@ for j ∈ 0:K
         local Q
         r = floor(Int, n * α)
         p = (n - r) ÷ 2
-        Q = create_Q(randn(p), randn(r))
+        Q = create_Q(π .* rand(p), randn(r))
         bench = @elapsed nrmschur(Q, :H, true, ε)# setup = (Q = copy($Q))
         if j > 0
            means[i, j] = bench * 1e3
@@ -42,11 +42,27 @@ for j ∈ 0:K
 end
 
 αt = LinRange(0, 0.6, 300)
+Std = std(means, dims= 2)
 M = mean(means, dims = 2)
+means2 = copy(means)
 Min = minimum(means, dims=2)
+#Get rid of outliers
+for (i, α) ∈ enumerate(αs)
+    l1 = []; l2 = []
+    for j ∈ 1:K
+        if means[i, j] - M[i] > 2 * Std[i]
+            append!(l1, j)
+        else
+            append!(l2, j)
+        end
+    end
+    means2[i, l1] .= mean(means[i, l2])
+end
+Min = minimum(means2, dims=2)
+M = mean(means2, dims = 2)
 P =  plot(framestyle=:box, legend=:topleft,font="Computer Modern", tickfontfamily="Computer Modern",legendfont="Computer Modern", guidefontfamily = "Computer Modern",
 legendfontsize=10,yguidefontsize=17,xguidefontsize=17, xtickfontsize = 13, ytickfontsize=13,margin = 0.3Plots.cm, minorgrid = true)
-plot!(αs, M, ribbon = std(means, dims= 2), fillalpha = 0.15, label = "Avg. runtime " *L"\pm\ \sigma", lw = 1.5)#, ribbon = stds, fillalpha = 0.2)
+plot!(αs, M, ribbon = std(means2, dims= 2), fillalpha = 0.15, label = "Avg. runtime " *L"\pm\ \sigma", lw = 1.5)#, ribbon = stds, fillalpha = 0.2)
 plot!(αs, Min, label = "Min. runtime", lw = 1.5, ls = :dashdot)
 plot!(αt,    (8/3 .* αt.^3 .+ 5 .* αt .^2 .- αt .+ 14/3)./(14/3) .* M[1], label = L"\propto \frac{8}{3}\alpha^3 + 5\alpha^2-\alpha + \frac{14}{3}", lw = 1.5, color=:darkgreen, ls =:dot) 
 plot!(αt,    (8/3 .* αt.^3 .+ 5 .* αt .^2 .- αt .+ 14/3)./(14/3) .* Min[1], label = false, lw = 1.5, color=:darkgreen, ls =:dot) 
