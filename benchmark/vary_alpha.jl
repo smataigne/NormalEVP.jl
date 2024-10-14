@@ -1,4 +1,4 @@
-using LinearAlgebra, SkewLinearAlgebra, BenchmarkTools, Random, Plots, LaTeXStrings
+using LinearAlgebra, SkewLinearAlgebra, BenchmarkTools, Plots, LaTeXStrings
 include("../src/normal_schur.jl")
 
 @views function create_Q(θs::AbstractVector, λs::AbstractVector)
