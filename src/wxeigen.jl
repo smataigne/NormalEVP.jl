@@ -1,15 +1,10 @@
 using LinearAlgebra
 
-
 """
-Comment : wxlanczos!(A) and wxhessenberg!(A) are numerically unstable.
-The symplecticity of the basis constructed by Lanczos is not a stable property.
-"""
-
-"""
-wxlanczos!(A::Symmetric{T})
+```wxlanczos!(A::Symmetric{T})```
 
 Implementation of Lanczos algorithm for A = [W -X; X W] with W symmetric and X is skew-symmetric.\\
+No re-orthogonalization is performed. The algorithm is unstable.
 A is assumed full-rank with eignvalues of multiplicity 2 exactly.\\
 Only n/2 iterations are performed and the orthogonalized (Krylov) basis is then extended using the symplectic structure of the eigenvectors.\\
 This procedure fully exploits the structure of A.
@@ -28,6 +23,7 @@ Output: - A symplectic orthogonal basis K that tridiagonalizes A. (K stands for 
     α = zeros(T, n)
     @inbounds(for i ∈ 1:n2-1  #Only half Lanczos iterations are needed
         mul!(K[:, i + 1], A, K[:, i], 1, 0)
+        
         α[i] = dot(K[:, i], K[:, i + 1])
         if i > 1
             K[:, i + 1] .-= β[i - 1] * K[:, i - 1]
@@ -48,7 +44,67 @@ end
 wxlanczos(A::Symmetric)  = wxlanczos!(copy(A)) 
 
 """
-wxhessenberg!(A::AbstractMatrix{T})
+```wxlanczosfull!(A::Symmetric{T})```
+
+Implementation of Lanczos algorithm for A = [W -X; X W] with W symmetric and X is skew-symmetric.\\
+A full re-orthogonalization is performed. The algorithm is stable.
+A is assumed full-rank with eignvalues of multiplicity 2 exactly.\\
+Only n/2 iterations are performed and the orthogonalized (Krylov) basis is then extended using the symplectic structure of the eigenvectors.\\
+This procedure fully exploits the structure of A.
+
+Input: A symmetric matrix A = [W -X; X W] with W symmetric and X is skew-symmetric.
+
+Output: - A symplectic orthogonal basis K that tridiagonalizes A. (K stands for "Krylov")\\
+        - The tridiagonal form T (A = K * T * K')
+"""
+@views function wxlanczosfull!(A::Symmetric{T}) where T
+    n = size(A, 1); n2 =  n ÷ 2
+    K = zeros(T, n, n)
+    mul!(K[:, 1], A, randn(n), 1, 0)
+    K[:, 1] ./= norm(K[:, 1])
+    β = zeros(T, n - 1) 
+    α = zeros(T, n)
+    @inbounds(for i ∈ 1:n2-1  #Only half Lanczos iterations are needed
+        #### Use symplectic structure to extrapolate n/2 last iterations
+        K[1:n2, n2 + i] .= -K[(n2+1):n, i] 
+        K[(n2+1):n, n2 + i] .= K[1:n2, i] 
+
+        mul!(K[:, i + 1], A, K[:, i], 1, 0)
+        K[:, i + 1] .-= dot(K[:, i + 1] , K[:, i + n2]) .* K[:, i +n2]
+        α[i] = dot(K[:, i], K[:, i + 1])
+        if i > 1
+            @. K[:, i + 1] -= α[i] * K[:, i] + β[i-1] * K[:, i - 1]
+            K[:, i + 1] .-= dot(K[:, i + 1] , K[:, i + n2]) .* K[:, i + n2]
+            K[:, i + 1] .-= dot(K[:, i + 1] , K[:, i - 1 + n2]) .* K[:, i - 1 + n2]
+        else
+            @. K[:, i + 1] -= α[i] * K[:, i]
+            K[:, i + 1] .-= dot(K[:, i + 1] , K[:, i + n2]) .* K[:, i + n2]
+        end
+        ### Full re-orthogonalization
+        for j ∈ 1:i
+            K[:, i + 1] .-= dot(K[:, i + 1] , K[:, j]) .* K[:, j]
+            K[:, i + 1] .-= dot(K[:, i + 1] , K[:, j + n2]) .* K[:, j + n2]
+        end
+        #=
+        K[:, i + 1] .-= dot(K[:, i + 1] , K[:, i + n2]) .* K[:, i +n2]
+        α[i] = dot(K[:, i], K[:, i + 1])
+        K[:, i + 1] .-= α[i] .* K[:, i]
+        =#
+        β[i] = norm(K[:, i + 1])
+        K[:, i + 1] ./= β[i]
+    end)
+    K[1:n2, n] .= -K[(n2+1):n, n2] 
+    K[(n2+1):n, n] .= K[1:n2, n2] 
+    α[n2] = dot(K[:, n2], A,  K[:, n2])
+    α[(n2+1):n] .= α[1:n2]
+    β[(n2+1):(n-1)] .= β[1:(n2-1)]
+    return K, SymTridiagonal(α, β)
+end
+
+wxlanczosfull(A::Symmetric)  = wxlanczosfull!(copy(A)) 
+
+"""
+```wxhessenberg!(A::AbstractMatrix{T})```
 
 "Dummy" implementation of Householder tridiagonalization for A = [W -X; X W] with W symmetric and X is skew-symmetric.\\
 A is assumed full-rank with eignvalues of multiplicity 2 exactly.\\
@@ -96,7 +152,7 @@ end
 wxhessenberg(A::AbstractMatrix) = wxhessenberg!(copy(A))
 
 """
-wxeigen!(A::AbstractMatrix{T}, method::Symbol)
+```wxeigen!(A::AbstractMatrix{T}, method::Symbol)```
 
 Eigenvalue decomposition of A = [W -X; X W] with W symmetric and X is skew-symmetric.\\
 A is assumed full-rank with eignvalues of multiplicity 2 exactly.\\
@@ -110,7 +166,9 @@ Output: The eigenvalue decomposition of A using Eigen structure.
     n = size(A, 1)
     n2 = n ÷ 2
     Λ = similar(A, n)
-    if method == :L
+    if method == :Lfull #Full re-orthogonalization, stable
+        Q, Tr = wxlanczosfull!(Symmetric(A))
+    elseif method ==:L #No re-orthogonalization, unstable
         Q, Tr = wxlanczos!(Symmetric(A))
     else
         Q, Tr = wxhessenberg!(A)
@@ -126,4 +184,4 @@ Output: The eigenvalue decomposition of A using Eigen structure.
 end
 
 wxeigen(A::AbstractMatrix, method::Symbol) = wxeigen!(copy(A), method)
-wxeigen(A::AbstractMatrix) = wxeigen!(copy(A), :L)
+wxeigen(A::AbstractMatrix) = wxeigen!(copy(A), :Lfull)

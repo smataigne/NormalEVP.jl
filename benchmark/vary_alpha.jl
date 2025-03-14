@@ -16,7 +16,7 @@ include("../src/normal_schur.jl")
         M[:, j + 1] .= -s * Q[:, j] + c * Q[:, j + 1]
     end
     for (i, λ) ∈ enumerate(λs)
-        M[:, 2p + i] .= (λ .* Q[:, end])
+        M[:, 2p + i] .= (λ .* Q[:, 2p + i])
     end
     return M * Q'
 end
@@ -58,6 +58,7 @@ for (i, α) ∈ enumerate(αs)
     end
     means2[i, l1] .= mean(means[i, l2])
 end
+
 Min = minimum(means2, dims=2)
 M = mean(means2, dims = 2)
 P =  plot(framestyle=:box, legend=:topleft,font="Computer Modern", tickfontfamily="Computer Modern",legendfont="Computer Modern", guidefontfamily = "Computer Modern",
@@ -66,10 +67,9 @@ plot!(αs, M, ribbon = std(means2, dims= 2), fillalpha = 0.15, label = "Avg. run
 plot!(αs, Min, label = "Min. runtime", lw = 1.5, ls = :dashdot)
 plot!(αt,    (8/3 .* αt.^3 .+ 5 .* αt .^2 .- αt .+ 14/3)./(14/3) .* M[1], label = L"\propto \frac{8}{3}\alpha^3 + 5\alpha^2-\alpha + \frac{14}{3}", lw = 1.5, color=:darkgreen, ls =:dot) 
 plot!(αt,    (8/3 .* αt.^3 .+ 5 .* αt .^2 .- αt .+ 14/3)./(14/3) .* Min[1], label = false, lw = 1.5, color=:darkgreen, ls =:dot) 
-#plot!(αt,    (5 .* αt .^2 .- αt .+ 14/3)./(14/3) .* M[1], label = L"\propto 5\alpha^2-\alpha + \frac{14}{3}", lw = 1.5, color=:darkgreen, ls =:dot) 
 xlabel!(L"α")
 ylabel!("Time [ms]")
 script_dir = @__DIR__
 path = joinpath(script_dir, "../figures/vary_alpha_n_" * string(n) * "_K_" * string(K) * ".pdf")
-savefig(P, path)
+#savefig(P, path)
 display(P)
