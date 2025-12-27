@@ -51,10 +51,9 @@ for (i, n) ∈ enumerate(sizes)
    print("Done: n = " * string(n) * "\n")
 end
 
-
 Pmean = plot(framestyle=:box, legend=:topleft,font="Computer Modern", tickfontfamily="Computer Modern",legendfont="Computer Modern", guidefontfamily = "Computer Modern",
 legendfontsize=10,yguidefontsize=15,xguidefontsize=15, xtickfontsize = 13, ytickfontsize=13,margin = 0.3Plots.cm, yscale=:log, xscale=:log, minorgrid=false, yticks =[10^2,10^4,10^6, 10^8])
-plot!(sizes, mean_LAhes,  label  = L"\texttt{hessenberg}\ (\texttt{gehrd})+\texttt{orghr}", color = :purple, linestyle =:dashdot, markershape=:circle)
+plot!(sizes, mean_LAhes,  label  = L"\texttt{hessenberg}\ (\texttt{gehrd}+\texttt{orghr})", color = :purple, linestyle =:dashdot, markershape=:circle)
 plot!(sizes, mean_nrmschurH, label = L"\texttt{nrmschur}" * " (Algorithm 4.1)", color = :blue, linestyle =:solid, markershape=:diamond)
 plot!(sizes, mean_ortho, label = L"\texttt{nrmschur2}" * " (with skew-Ham. solver)", color =:red, linestyle=:dash, markershape=:utriangle )
 #plot!(sizes, mean_nrmschurL, label = L"\texttt{nrmschur}"*" (Lanczos)", color =:red, linestyle=:dash ); scatter!(sizes, mean_nrmschurL, label = false, color =:red )
@@ -63,7 +62,7 @@ plot!(sizes, mean_LAschur,  label  = L"\texttt{schur}\ (\texttt{gees})", color =
 #plot!(sizes, mean_LAeig,    label = L"\texttt{eigvals}", color =:purple, linestyle=:dashdot); scatter!(sizes, mean_LAeig, label = false, color =:purple)
 #plot!(sizes, mean_LAlog,    label = L"\texttt{log}", color =:black, linestyle=:dashdot); scatter!(sizes, mean_LAlog, label = false, color=:black)
 plot!(sizes[2:end], 14/3 .* (sizes[2:end]).^3 .* 0.00002, label =L"\mathcal{O}(n^3)", color=:black, linestyle=:solid)
-xlabel!(L"n")
+xlabel!("Matrix size " * L"n")
 ylabel!("Average time [μs]")
 
 script_dir = @__DIR__
@@ -73,8 +72,8 @@ pathmean = joinpath(script_dir, "../figures/mean_worst_benchmark_3.pdf")
 savefig(Pmean, pathmean)
 display(Pmean)
 Pmean2 = plot(framestyle=:box, legend=:topleft,font="Computer Modern", tickfontfamily="Computer Modern",legendfont="Computer Modern", guidefontfamily = "Computer Modern",
-legendfontsize=10,yguidefontsize=15,xguidefontsize=15, xtickfontsize = 13, ytickfontsize=13,margin = 0.3Plots.cm, yscale=:log, xscale=:log, minorgrid=false, xticks=[10,10^2,10^3,10^4])
-plot!(sizes, mean_LAhes ./ mean_LAhes,  label  = L"\texttt{hessenberg}\ (\texttt{gehrd})+\texttt{orghr}", color = :purple, linestyle =:dashdot, markershape=:circle)
+legendfontsize=10,yguidefontsize=15,xguidefontsize=15, xtickfontsize = 13, ytickfontsize=13,margin = 0.3Plots.cm, yscale=:log2, xscale=:log, minorgrid=false,yticks = ([1,2,4,8,16, 32], [ L"1",L"2", L"4",L"8", L"16", L"32"]), xticks=[10,10^2,10^3,10^4])
+plot!(sizes, mean_LAhes ./ mean_LAhes,  label  = L"\texttt{hessenberg}\ (\texttt{gehrd}+\texttt{orghr})", color = :purple, linestyle =:dashdot, markershape=:circle)
 plot!(sizes, mean_nrmschurH  ./ mean_LAhes, label = L"\texttt{nrmschur}" * " (Algorithm 4.1)", color = :blue, linestyle =:solid, markershape=:diamond)
 plot!(sizes, mean_ortho  ./ mean_LAhes, label = "UHQR (only eigenvalues)", color =:red, linestyle=:dash, markershape=:utriangle )
 #plot!(sizes, mean_nrmschurL, label = L"\texttt{nrmschur}"*" (Lanczos)", color =:red, linestyle=:dash ); scatter!(sizes, mean_nrmschurL, label = false, color =:red )
@@ -82,8 +81,9 @@ plot!(sizes, mean_LAschur  ./ mean_LAhes,  label  = L"\texttt{schur}\ (\texttt{g
 
 #plot!(sizes, mean_LAeig,    label = L"\texttt{eigvals}", color =:purple, linestyle=:dashdot); scatter!(sizes, mean_LAeig, label = false, color =:purple)
 #plot!(sizes, mean_LAlog,    label = L"\texttt{log}", color =:black, linestyle=:dashdot); scatter!(sizes, mean_LAlog, label = false, color=:black)
-xlabel!(L"n")
-ylabel!("Time ratio")
+xlabel!("Matrix size " * L"n")
+ylabel!("Relative running time")
+ylims!(0.8,35)
 
 script_dir = @__DIR__
 pathmean2 = joinpath(script_dir, "../figures/mean_worst_benchmark_31.pdf")

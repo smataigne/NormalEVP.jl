@@ -51,7 +51,7 @@ plot!(sizes, mean_LAschur,  label  = L"\texttt{schur}\ (\texttt{gees})", color =
 #plot!(sizes, mean_LAeig,    label = L"\texttt{eigvals}", color =:purple, linestyle=:dashdot); scatter!(sizes, mean_LAeig, label = false, color =:purple)
 #plot!(sizes, mean_LAlog,    label = L"\texttt{log}", color =:black, linestyle=:dashdot); scatter!(sizes, mean_LAlog, label = false, color=:black)
 plot!(sizes[2:end], 14/3 .* (sizes[2:end]).^3 .* 0.00002, label =L"\mathcal{O}(n^3)", color=:black, linestyle=:solid)
-xlabel!(L"n")
+xlabel!("Matrix size " * L"n")
 ylabel!("Average time [μs]")
 
 script_dir = @__DIR__
@@ -69,7 +69,7 @@ plot!(sizes, mean_LAschur  ./ mean_LAhes,  label  = L"\texttt{schur}\ (\texttt{g
 ylims!(0.8,32)
 #plot!(sizes, mean_LAeig,    label = L"\texttt{eigvals}", color =:purple, linestyle=:dashdot); scatter!(sizes, mean_LAeig, label = false, color =:purple)
 #plot!(sizes, mean_LAlog,    label = L"\texttt{log}", color =:black, linestyle=:dashdot); scatter!(sizes, mean_LAlog, label = false, color=:black)
-xlabel!(L"n")
+xlabel!("Matrix size " * L"n")
 ylabel!("Relative running time")
 
 script_dir = @__DIR__
