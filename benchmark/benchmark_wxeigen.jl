@@ -39,34 +39,28 @@ end
 Ptimes =  plot(framestyle=:box, legend=:topleft,font="Computer Modern", tickfontfamily="Computer Modern",legendfont="Computer Modern", guidefontfamily = "Computer Modern",
 legendfontsize=10,yguidefontsize=17,xguidefontsize=17, xtickfontsize = 13, ytickfontsize=13,margin = 0.3Plots.cm, minorgrid = false, yscale=:log, xscale=:log2, xticks =([16,32,64,128, 256, 512], [ L"2^4",L"2^5", L"2^6", L"2^7", L"2^8", L"2^9"]),
 yticks =([1e-5, 1e-4, 1e-3, 1e-2, 1e-1],[L"10^{-5}", L"10^{-4}",L"10^{-3}", L"10^{-2}",L"10^{-1}", L"10^{-0}"]), ylims=(0.5*1e-5, 4*0.1))
-plot!(2ms, timesWX, label = L"\texttt{wxeigen}" * " - No re-orth.", color = :blue, linestyle =:solid)
-plot!(2ms, timesWXfull, label = L"\texttt{wxeigen}" * " - Full re-orth.", color = :red, linestyle =:dashdot)
-plot!(2ms, timesSym, label = L"\texttt{eigen}\ (\texttt{syevr})", color = :green, linestyle =:dash)
-scatter!(2ms, timesWX, label = false, color=:blue)
-scatter!(2ms, timesWXfull, label = false, color=:red)
-scatter!(2ms, timesSym, label = false, color=:green)
+plot!(2ms, timesWX, label = L"\texttt{wxeigen}" * " - No re-orth.", color = :blue, linestyle =:solid, markershape=:circle)
+plot!(2ms, timesWXfull, label = L"\texttt{wxeigen}" * " - Full re-orth.", color = :red, linestyle =:dashdot, markershape=:diamond)
+plot!(2ms, timesSym, label = L"\texttt{eigen}\ (\texttt{syevr})", color = :green, linestyle =:dash, markershape=:utriangle)
 xlabel!(L"2m")
 ylabel!("Running time [s]")
 
 Perrors =  plot(framestyle=:box,legend=:right,font="Computer Modern", tickfontfamily="Computer Modern",legendfont="Computer Modern", guidefontfamily = "Computer Modern",
 legendfontsize=10,yguidefontsize=17,xguidefontsize=17, xtickfontsize = 13, ytickfontsize=13,margin = 0.3Plots.cm, minorgrid = false, minorgridalpha=0.01, yscale=:log10, xscale=:log2, xticks =([16,32,64,128,256,512], [ L"2^4",L"2^5", L"2^6", L"2^7", L"2^8", L"2^9"]),
 yticks =([1, 1e-5, 1e-10, 1e-15],[ L"10^0",L"10^{-5}", L"10^{-10}", L"10^{-15}"]), ylims= (1e-16, 10))
-plot!(2ms, errorsWX, label = L"\texttt{wxeigen}" * " - No re-orth.", color = :blue, linestyle =:solid)
-plot!(2ms, errorsWXfull, label = L"\texttt{wxeigen}" * " - Full re-orth.", color = :red, linestyle =:dashdot)
-plot!(2ms, errorsSym, label = L"\texttt{eigen}\ (\texttt{syevr})", color = :green, linestyle =:dash)
-#plot!(2ms, ms.^(1.5) * eps(Float64) * 10, label = L"\mathcal{O}(m^{1.5} \cdot \varepsilon_m)", linewidth = 2)
-scatter!(2ms, errorsWX, label = false, color=:blue)
-scatter!(2ms, errorsWXfull, label = false, color = :red)
-scatter!(2ms, errorsSym, label = false, color=:green)
+plot!(2ms, errorsWX, label = L"\texttt{wxeigen}" * " - No re-orth.", color = :blue, linestyle =:solid, markershape=:circle)
+plot!(2ms, errorsWXfull, label = L"\texttt{wxeigen}" * " - Full re-orth.", color = :red, linestyle =:dashdot, markershape=:diamond)
+plot!(2ms, errorsSym, label = L"\texttt{eigen}\ (\texttt{syevr})", color = :green, linestyle =:dash, markershape=:utriangle)
 xlabel!(L"2m")
 ylabel!(L"\Vert A\breve{Q} - \breve{Q} \tilde{\Lambda}\Vert_\mathrm{2} / \Vert A \Vert_\mathrm{2} ")
 display(Ptimes)
 display(Perrors)
 
 script_dir = @__DIR__
+path1 = joinpath(script_dir, "../figures/WX_times_2.pdf")
 path2 = joinpath(script_dir, "../figures/WX_errors_2.pdf")
-#savefig(Ptimes, path1)
-#savefig(Perrors, path2)
+savefig(Ptimes, path1)
+savefig(Perrors, path2)
 
 
 

@@ -4,6 +4,7 @@ using LinearAlgebra, SkewLinearAlgebra
 This file contains routines to isolate the zero diagonal values of a square upper bidiagonal matrix.
 The procedure is detailed in Appendix A of Mataigne, S., Gallivan, K., The eigenvalue decomposition of normal matrices using the decomposition of the skew-symmetric part with applications to orthogonal matrices.
 """
+
 """
 ```getgivens(a::Number, b::Number)```
 

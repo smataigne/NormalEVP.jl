@@ -1,7 +1,7 @@
 using LinearAlgebra, SkewLinearAlgebra
-include("chase_zeros.jl")
-include("normal_schur.jl")
-include("wxeigen.jl")
+include("../src/chase_zeros.jl")
+include("../src/normal_schur.jl")
+include("../src/wxeigen.jl")
 
 """
 nrmschur2(A::AbstractMatrix, param::Symbol, check_zeros::Bool, ε::Number)
@@ -79,7 +79,7 @@ Description: Computes the real Schur decomposition of the matrix A. nrmschur2 as
         mul!(V[:, (n2b+1):end], K[:, (n2b+1):end], SVD.U, 1, 0)
         Σ .= SVD.S
     end
-    r, r2 = find_multiplicity!(Σ, multiples, n2, isodd(n), ε)
+    r, r2 = find_multiplicity!(Σ, multiples, n2, isodd(n), ε, norm(A))
     complex_real_perm!(V, r2)
     m = n2 - r2
     smax = maximum(multiples[1:m])

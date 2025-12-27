@@ -34,7 +34,7 @@ end
     Q = Matrix(QR.Q) * Diagonal(sign.(diag(QR.R)))
     M = similar(Q, n, n)
     for (i, θ) ∈  enumerate(θs)
-        κ = 2 * rand()
+        κ = 1#2 * rand()
         c = κ * cos(θ); s = κ * sin(θ)
         j = 2i - 1
         M[:, j]     .=  c * Q[:, j] + s * Q[:, j + 1]
@@ -63,8 +63,8 @@ n = 100
         S = schur(Q)
         data[i, 1] += log2(norm(Q * V - V * T ) / norm(Q))
         data[i, 2] += log2(norm(V'V - I))
-        data[i, 3] += log2(avg_bound(T.d[1:2:end],T.dl[1:2:end])  * (1+4 ))
-        data[i, 4] += log2(bound(T.d[1:2:end],T.dl[1:2:end])  * (1+4 )) 
+        data[i, 3] += log2(avg_bound(T.d[1:2:end],T.dl[1:2:end])  * (6))
+        data[i, 4] += log2(bound(T.d[1:2:end],T.dl[1:2:end])  * (6)) 
     end
     data[i, :] ./= N  
 end)
@@ -77,14 +77,14 @@ P= plot(framestyle=:box,legend=:top,font="Computer Modern", tickfontfamily="Comp
 legendfontsize=12,yguidefontsize=17,xguidefontsize=17, xtickfontsize = 13, ytickfontsize=13,margin = 0.3Plots.cm, minorgrid = false, minorgridalpha=0.01, yscale=:log10,
 xticks =([0,π/4,π/2], [ L"0",L"\frac{\pi}{4}", L"\frac{\pi}{2}"]),
 yticks =([1e-9,1e-11, 1e-13, 1e-15],[L"10^{-9}",L"10^{-11}",L"10^{-13}", L"10^{-15}"]), ylims= (1e-15*0.5, 4*1e-9))
-plot!(LinRange(0,π/2, l), data[:, 1], label="Samples", linewidth = 1.5, color=:blue, linestyle=:dash)
-scatter!(LinRange(0,π/2, l), data[:, 1], label=false, color=:blue, markersize=2)
+plot!(LinRange(0,π/2, l), data[:, 1], label="Samples", linewidth = 1.5, color=:blue, linestyle=:dash, markersize=3, markershape=:circle, markerstrokewidth=0.1)
+#scatter!(LinRange(0,π/2, l), data[:, 1], label=false, color=:blue, markersize=2)
 x = LinRange(0,π/2-0.00001, 1000)
-plot!(LinRange(0,π/2, l), (data[:, 4]).*eps(Float64), linewidth = 2, label=L" \varepsilon_m 5\ \max_{i,j}|\lambda_ic_i-\lambda_j c_j|/|\lambda_is_i-\lambda_j s_j|", linestyle=:solid)
-plot!(LinRange(0,π/2, l), (data[:, 3]).*eps(Float64), linewidth = 2, label=L"\varepsilon_m 5\ \mathrm{avg}_{i,j}|\lambda_ic_i-\lambda_j c_j|/|\lambda_is_i-\lambda_j s_j|", linestyle=:dot)
+plot!(LinRange(0,π/2, l), (data[:, 4]).*eps(Float64), linewidth = 2, color=:green, label=L" \varepsilon_m 6\ \max_{i,j}|\lambda_ic_i-\lambda_j c_j|/|\lambda_is_i-\lambda_j s_j|", linestyle=:solid, markersize=3, markershape=:diamond, markerstrokewidth=0.5)
+#plot!(LinRange(0,π/2, l), (data[:, 3]).*eps(Float64), linewidth = 2, label=L"\varepsilon_m 6\ \mathrm{avg}_{i,j}|\lambda_ic_i-\lambda_j c_j|/|\lambda_is_i-\lambda_j s_j|", linestyle=:dot, markersize=2, markershape=:utriangle, markerstrokewidth=0.1)
 xlabel!(L"\theta")
 ylabel!(L"\Vert A\widehat{Q}- \widehat{Q}\widehat{S}\ \Vert_\mathrm{F} / \Vert A\ \Vert_\mathrm{F}")
 script_dir = @__DIR__
-path = joinpath(script_dir, "../figures/worst_angle_normal.pdf")
-#savefig(P, path)
+path = joinpath(script_dir, "../figures/worst_angle_orthogonal.pdf")
+savefig(P, path)
 display(P)

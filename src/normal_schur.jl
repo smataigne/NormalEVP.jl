@@ -90,7 +90,7 @@ Output: a list of odd-indices of v where v is zero.
 function find_zeros(v::AbstractVector{T}) where T
     n  = length(v)
     lz = zeros(Int, n)
-    ε  = 10 * eps(T)
+    ε  = 10 * eps(T) * max(1, norm(v))
     nz = 0
     for i ∈ 1:2:n
         if abs(v[i]) < ε
